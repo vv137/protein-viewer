@@ -8,6 +8,14 @@
   "engines": {
     "vscode": "^1.85.0"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vv137/protein-viewer.git"
+  },
+  "bugs": {
+    "url": "https://github.com/vv137/protein-viewer/issues"
+  },
+  "homepage": "https://github.com/vv137/protein-viewer#readme",
   "categories": [
     "Visualization",
     "Other"

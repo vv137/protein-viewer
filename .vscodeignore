@@ -1,0 +1,27 @@
+# Source / build configuration — host code is already bundled into dist/.
+src/**
+tsconfig.json
+esbuild.config.mjs
+.vscode/**
+.gitignore
+.gitattributes
+.editorconfig
+DEVELOPMENT.md
+**/*.map
+**/*.ts
+!dist/**/*.js
+
+# Exclude all of node_modules…
+node_modules/**
+
+# …except the bits of Mol* that the webview actually loads at runtime.
+!node_modules/molstar/build/viewer/molstar.js
+!node_modules/molstar/build/viewer/molstar.css
+!node_modules/molstar/build/viewer/molstar.js.LICENSE.txt
+!node_modules/molstar/LICENSE
+!node_modules/molstar/README.md
+!node_modules/molstar/package.json
+
+# Misc
+*.vsix
+.DS_Store
