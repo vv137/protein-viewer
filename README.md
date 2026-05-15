@@ -34,7 +34,7 @@ The default editor for these files is still the text editor — the Mol\* viewer
   - *Protein Viewer: Open by Path…* (any absolute path)
   - *Protein Viewer: Open Empty Viewer*
 - **VS Code's built-in "Open With…"** menu also lists the Mol\* viewer for any supported file.
-- **URI handler**: `vscode://vv137xyz.protein-viewer/open?path=/abs/path/to/file.pdb`
+- **URI handler**: `vscode://vv137xyz.molstar-viewer/open?path=/abs/path/to/file.pdb`
 
 ## Drag-and-drop
 

@@ -1,5 +1,5 @@
 {
-  "name": "protein-viewer",
+  "name": "molstar-viewer",
   "displayName": "Protein Viewer (Mol*)",
   "description": "View PDB / CIF / mmCIF / MOL / SDF / XYZ / GRO molecular structures inside VSCode, powered by Mol*.",
   "version": "0.1.0",
