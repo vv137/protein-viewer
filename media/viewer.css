@@ -1,0 +1,49 @@
+/* Our chrome only. Mol*'s own CSS comes from node_modules/molstar/build/viewer/molstar.css. */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  background: #1e1e1e;
+  color: #ddd;
+  font-family: var(--vscode-font-family, sans-serif);
+  overflow: hidden;
+}
+
+#viewer {
+  position: absolute;
+  inset: 0;
+}
+
+#drop-hint {
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  background: rgba(30, 30, 30, 0.85);
+  border: 2px dashed #888;
+  z-index: 10;
+  pointer-events: none;
+}
+
+body.dragging #drop-hint {
+  display: flex;
+}
+
+#error-banner {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  padding: 6px 10px;
+  background: var(--vscode-inputValidation-errorBackground, #5a1d1d);
+  color: var(--vscode-inputValidation-errorForeground, #fff);
+  border-bottom: 1px solid var(--vscode-inputValidation-errorBorder, #be1100);
+  z-index: 20;
+  display: none;
+  font-size: 0.85rem;
+}
+
+#error-banner.visible { display: block; }

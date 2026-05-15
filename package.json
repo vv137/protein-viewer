@@ -1,0 +1,95 @@
+{
+  "name": "protein-viewer",
+  "displayName": "Protein Viewer (Mol*)",
+  "description": "View PDB / CIF / mmCIF / MOL / SDF / XYZ / GRO molecular structures inside VSCode, powered by Mol*.",
+  "version": "0.1.0",
+  "publisher": "vv137xyz",
+  "private": true,
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Visualization",
+    "Other"
+  ],
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onUri"
+  ],
+  "contributes": {
+    "customEditors": [
+      {
+        "viewType": "proteinViewer.viewer",
+        "displayName": "Protein Viewer (Mol*)",
+        "selector": [
+          { "filenamePattern": "*.pdb" },
+          { "filenamePattern": "*.ent" },
+          { "filenamePattern": "*.cif" },
+          { "filenamePattern": "*.mmcif" },
+          { "filenamePattern": "*.bcif" },
+          { "filenamePattern": "*.mol" },
+          { "filenamePattern": "*.mol2" },
+          { "filenamePattern": "*.sdf" },
+          { "filenamePattern": "*.xyz" },
+          { "filenamePattern": "*.gro" }
+        ],
+        "priority": "option"
+      }
+    ],
+    "commands": [
+      {
+        "command": "proteinViewer.openEmpty",
+        "title": "Open Empty Viewer",
+        "category": "Protein Viewer"
+      },
+      {
+        "command": "proteinViewer.openByPath",
+        "title": "Open by Path…",
+        "category": "Protein Viewer"
+      },
+      {
+        "command": "proteinViewer.openCurrent",
+        "title": "Open in Mol* Viewer",
+        "category": "Protein Viewer"
+      }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "proteinViewer.openCurrent",
+          "when": "resourceExtname =~ /\\.(pdb|ent|cif|mmcif|bcif|mol|mol2|sdf|xyz|gro)$/i",
+          "group": "navigation@30"
+        }
+      ],
+      "editor/title/context": [
+        {
+          "command": "proteinViewer.openCurrent",
+          "when": "resourceExtname =~ /\\.(pdb|ent|cif|mmcif|bcif|mol|mol2|sdf|xyz|gro)$/i",
+          "group": "1_open@30"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "proteinViewer.openCurrent",
+          "when": "resourceExtname =~ /\\.(pdb|ent|cif|mmcif|bcif|mol|mol2|sdf|xyz|gro)$/i",
+          "group": "navigation@30"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "build": "node esbuild.config.mjs",
+    "watch": "node esbuild.config.mjs --watch",
+    "vscode:prepublish": "npm run build",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/vscode": "^1.85.0",
+    "esbuild": "^0.20.0",
+    "typescript": "^5.4.0"
+  },
+  "dependencies": {
+    "molstar": "^5.9.0"
+  }
+}
