@@ -15,23 +15,6 @@ html, body {
   inset: 0;
 }
 
-#drop-hint {
-  position: absolute;
-  inset: 0;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.2rem;
-  background: rgba(30, 30, 30, 0.85);
-  border: 2px dashed #888;
-  z-index: 10;
-  pointer-events: none;
-}
-
-body.dragging #drop-hint {
-  display: flex;
-}
-
 #error-banner {
   position: absolute;
   left: 0;

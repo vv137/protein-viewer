@@ -32,35 +32,46 @@ export class ProteinViewerProvider
     document: StructureDocument,
     webviewPanel: vscode.WebviewPanel
   ): Promise<void> {
-    attachViewer(webviewPanel, this.context, document.uri);
+    attachViewer(webviewPanel, this.context, [document.uri]);
   }
 }
 
 /**
- * Opens an empty Mol* viewer in a new editor tab (no document attached).
- * Files can be loaded into it via drag-and-drop or the "Open by Path…" command.
+ * Opens a Mol* viewer in a new editor tab. With no URIs, it starts empty
+ * (load files later via drag-and-drop). With multiple URIs, all of them
+ * are loaded into the same scene — first one replaces, the rest append.
  */
-export function openEmptyViewerPanel(context: vscode.ExtensionContext): void {
+export function openViewerPanel(
+  context: vscode.ExtensionContext,
+  uris: vscode.Uri[] = []
+): void {
+  const title =
+    uris.length === 0
+      ? 'Mol* Viewer'
+      : uris.length === 1
+        ? path.basename(uris[0].fsPath)
+        : `Mol* Viewer (${uris.length} structures)`;
   const panel = vscode.window.createWebviewPanel(
     ProteinViewerProvider.viewType,
-    'Mol* Viewer',
+    title,
     vscode.ViewColumn.Active,
     {
       enableScripts: true,
       retainContextWhenHidden: true
     }
   );
-  attachViewer(panel, context, undefined);
+  attachViewer(panel, context, uris);
 }
 
 /**
- * Wire a WebviewPanel into the Mol* shim. If `initialUri` is given, that file
- * is loaded when the webview signals 'ready'. Drag-and-drop always works.
+ * Wire a WebviewPanel into the Mol* shim. Each URI in `initialUris` is loaded
+ * when the webview signals 'ready'; the first one replaces the (empty) scene,
+ * the rest append. Drag-and-drop into the panel always works.
  */
 function attachViewer(
   webviewPanel: vscode.WebviewPanel,
   context: vscode.ExtensionContext,
-  initialUri: vscode.Uri | undefined
+  initialUris: vscode.Uri[]
 ): void {
   const extensionUri = context.extensionUri;
   const molstarBuildDir = vscode.Uri.joinPath(
@@ -116,7 +127,9 @@ function attachViewer(
     async (msg: WebviewMessage) => {
       switch (msg.kind) {
         case 'ready':
-          if (initialUri) await loadUri(initialUri, /*replace*/ true);
+          for (let i = 0; i < initialUris.length; i++) {
+            await loadUri(initialUris[i], /*replace*/ i === 0);
+          }
           return;
         case 'log':
           console[msg.level === 'error' ? 'error' : msg.level === 'warn' ? 'warn' : 'log'](
@@ -184,7 +197,6 @@ function buildHtml(
   <title>Protein Viewer</title>
 </head>
 <body>
-  <div id="drop-hint">Drop a structure file here to add it</div>
   <div id="viewer"></div>
   <script nonce="${nonce}" src="${molstarJs}"></script>
   <script nonce="${nonce}" src="${viewerJs}"></script>

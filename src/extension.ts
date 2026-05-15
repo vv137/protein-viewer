@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { ProteinViewerProvider, openEmptyViewerPanel } from './viewerProvider';
+import { ProteinViewerProvider, openViewerPanel } from './viewerProvider';
 import { isSupported } from './fileTypes';
 
 export function activate(context: vscode.ExtensionContext): void {
@@ -17,29 +17,46 @@ export function activate(context: vscode.ExtensionContext): void {
     )
   );
 
-  // "Open in Mol* Viewer" — works from Explorer context menu (the clicked
-  // URI is passed as the first argument) and from the command palette
-  // (no argument; falls back to the active editor).
+  // "Open in Mol* Viewer" — Explorer context menu (single + multi-select),
+  // editor tab/body context menu, and command palette.
+  // VSCode passes the right-clicked URI as `uri` and the full selection as
+  // `allUris` when multiple Explorer items are selected. A single file goes
+  // through `vscode.openWith` so it gets the standard per-document tab;
+  // multiple files share one viewer panel.
   context.subscriptions.push(
     vscode.commands.registerCommand(
       'proteinViewer.openCurrent',
-      async (uri?: vscode.Uri) => {
-        const target = uri ?? vscode.window.activeTextEditor?.document.uri;
-        if (!target) {
+      async (uri?: vscode.Uri, allUris?: vscode.Uri[]) => {
+        const candidates: vscode.Uri[] =
+          allUris && allUris.length > 0
+            ? allUris
+            : uri
+              ? [uri]
+              : vscode.window.activeTextEditor
+                ? [vscode.window.activeTextEditor.document.uri]
+                : [];
+        if (candidates.length === 0) {
           vscode.window.showWarningMessage('No file selected.');
           return;
         }
-        if (!isSupported(path.basename(target.fsPath))) {
+        const supported = candidates.filter((u) =>
+          isSupported(path.basename(u.fsPath))
+        );
+        if (supported.length === 0) {
           vscode.window.showWarningMessage(
-            `Unsupported file type: ${path.basename(target.fsPath)}`
+            'No supported structure files in selection.'
           );
           return;
         }
-        await vscode.commands.executeCommand(
-          'vscode.openWith',
-          target,
-          ProteinViewerProvider.viewType
-        );
+        if (supported.length === 1) {
+          await vscode.commands.executeCommand(
+            'vscode.openWith',
+            supported[0],
+            ProteinViewerProvider.viewType
+          );
+        } else {
+          openViewerPanel(context, supported);
+        }
       }
     )
   );
@@ -47,7 +64,7 @@ export function activate(context: vscode.ExtensionContext): void {
   // "Open Empty Viewer" — no file required; drag-and-drop into it afterwards.
   context.subscriptions.push(
     vscode.commands.registerCommand('proteinViewer.openEmpty', () => {
-      openEmptyViewerPanel(context);
+      openViewerPanel(context);
     })
   );
 

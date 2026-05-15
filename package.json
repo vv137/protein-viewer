@@ -16,6 +16,16 @@
   "activationEvents": [
     "onUri"
   ],
+  "extensionKind": [
+    "workspace",
+    "ui"
+  ],
+  "capabilities": {
+    "virtualWorkspaces": true,
+    "untrustedWorkspaces": {
+      "supported": true
+    }
+  },
   "contributes": {
     "customEditors": [
       {

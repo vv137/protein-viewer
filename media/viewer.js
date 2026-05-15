@@ -92,96 +92,35 @@
   });
 
   // ---------- drag-and-drop from the VSCode Explorer ----------
-  // VSCode forwards Explorer drags into the webview with these mime types:
-  //   - application/vnd.code.uri-list  (newline-separated VSCode URIs)
-  //   - text/uri-list                  (same content, standard mime)
-  // External OS file drops arrive as `Files` via dataTransfer.files.
-  function setDragging(on) {
-    document.body.classList.toggle('dragging', !!on);
-  }
-
-  ['dragenter', 'dragover'].forEach((type) => {
-    window.addEventListener(type, (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy';
-      setDragging(true);
-    });
-  });
-
-  ['dragleave', 'dragend'].forEach((type) => {
-    window.addEventListener(type, (e) => {
-      // Only clear when leaving the window itself, not child elements.
-      if (e.target === document || e.target === document.body || type === 'dragend') {
-        setDragging(false);
-      }
-    });
-  });
-
-  window.addEventListener('drop', async (e) => {
+  // VSCode Explorer drops carry the file URI in `application/vnd.code.uri-list`
+  // (and a copy in `text/uri-list`) — but no actual File objects, so Mol*'s
+  // own drop handler can't load them. We intercept just to route the URIs to
+  // the extension host.
+  //
+  // The dragover preventDefault is mandatory: without it the browser (and
+  // VSCode's workbench layer above the webview) treats this region as a
+  // non-drop-zone and opens the dropped file in a new text editor instead of
+  // firing our drop handler. We don't call stopPropagation anywhere, so Mol*'s
+  // own drag/drop listeners still run and clear its native overlay state.
+  window.addEventListener('dragover', (e) => {
     e.preventDefault();
-    e.stopPropagation();
-    setDragging(false);
+    if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy';
+  }, { capture: true });
 
+  window.addEventListener('drop', (e) => {
     const dt = e.dataTransfer;
     if (!dt) return;
-
-    // 1) VSCode-internal Explorer drop: URI list.
     const vsList =
       dt.getData('application/vnd.code.uri-list') ||
       dt.getData('text/uri-list') ||
       '';
+    if (!vsList) return;
     const uris = vsList
       .split(/\r?\n/)
       .map((s) => s.trim())
       .filter((s) => s && !s.startsWith('#'));
-
-    if (uris.length > 0) {
-      vscode.postMessage({ kind: 'dropUris', uris });
-      return;
-    }
-
-    // 2) OS-level file drop: read in the webview, then send bytes to host
-    //    by way of a `dropUris`-style path. The webview has no fs access, so
-    //    for non-VSCode drops we just inspect dataTransfer.files and read
-    //    them directly into Mol*.
-    if (dt.files && dt.files.length > 0) {
-      const viewer = await getViewer();
-      for (const file of Array.from(dt.files)) {
-        const format = inferFormat(file.name);
-        if (!format) {
-          showError(`Unsupported file: ${file.name}`);
-          continue;
-        }
-        try {
-          if (format === 'mmcif' && /\.bcif$/i.test(file.name)) {
-            const buf = await file.arrayBuffer();
-            await viewer.loadStructureFromData(new Uint8Array(buf), format);
-          } else {
-            const text = await file.text();
-            await viewer.loadStructureFromData(text, format);
-          }
-          log('info', `loaded ${file.name} (${format}) via OS drop`);
-        } catch (err) {
-          showError('Failed to load ' + file.name + ': ' + (err && err.message ? err.message : err));
-          log('error', String(err));
-        }
-      }
-    }
-  });
-
-  // Minimal duplicate of fileTypes.ts kept here so the webview has no build step.
-  function inferFormat(filename) {
-    const ext = (filename.split('.').pop() || '').toLowerCase();
-    switch (ext) {
-      case 'pdb': case 'ent': return 'pdb';
-      case 'cif': case 'mmcif': case 'bcif': return 'mmcif';
-      case 'mol': return 'mol';
-      case 'mol2': return 'mol2';
-      case 'sdf': return 'sdf';
-      case 'xyz': return 'xyz';
-      case 'gro': return 'gro';
-      default: return null;
-    }
-  }
+    if (uris.length === 0) return;
+    e.preventDefault();
+    vscode.postMessage({ kind: 'dropUris', uris });
+  }, { capture: true });
 })();

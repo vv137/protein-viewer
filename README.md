@@ -38,7 +38,11 @@ The default editor for these files is still the text editor — the Mol\* viewer
 
 ## Drag-and-drop
 
-Drag any supported file from the VS Code Explorer onto an open Mol\* tab to add it to the current scene. Useful for superposing two or more structures (Mol\*'s right-side **Superposition** panel → *By TM-Align / By Chains / By Atoms / By DB Mapping*).
+Drag any supported file from the VS Code Explorer onto an open Mol\* tab to add it to the current scene. **Hold `Shift` while dropping** — without it, VS Code's workbench-level drop handler intercepts the file and opens it in a new editor instead of letting the webview receive the event. With Shift, the drop is forwarded to the viewer and the file is added to the current scene.
+
+Useful for superposing two or more structures (Mol\*'s right-side **Superposition** panel → *By TM-Align / By Chains / By Atoms / By DB Mapping*).
+
+Alternative: select multiple files in the Explorer, right-click → *Protein Viewer: Open in Mol\* Viewer*, and they all load into one viewer tab.
 
 ## Design notes
 
